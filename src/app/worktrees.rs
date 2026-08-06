@@ -1,4 +1,4 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
@@ -83,6 +83,7 @@ impl App {
                 Ok(metadata) => metadata,
                 Err(err) => {
                     self.state.config_diagnostic = Some(err);
+                    self.config_diagnostic_deadline = Some(Instant::now() + Duration::from_secs(5));
                     return;
                 }
             };
@@ -134,6 +135,7 @@ impl App {
         {
             self.state.config_diagnostic =
                 Some("This workspace is not a Herdr-managed worktree checkout.".into());
+            self.config_diagnostic_deadline = Some(Instant::now() + Duration::from_secs(5));
             return;
         }
         let Some(space) = ws.worktree_space().cloned() else {
@@ -157,6 +159,7 @@ impl App {
                 Ok(metadata) => metadata,
                 Err(err) => {
                     self.state.config_diagnostic = Some(err);
+                    self.config_diagnostic_deadline = Some(Instant::now() + Duration::from_secs(5));
                     return;
                 }
             };
@@ -165,6 +168,7 @@ impl App {
             Ok(list) => list,
             Err(err) => {
                 self.state.config_diagnostic = Some(err);
+                self.config_diagnostic_deadline = Some(Instant::now() + Duration::from_secs(5));
                 return;
             }
         };
@@ -213,6 +217,7 @@ impl App {
 
         if entries.is_empty() {
             self.state.config_diagnostic = Some("No Git worktrees found for this repo.".into());
+            self.config_diagnostic_deadline = Some(Instant::now() + Duration::from_secs(5));
             return;
         }
 
